@@ -1,0 +1,57 @@
+{
+    "muscleGroups": {
+        "chest": [
+            "orizontio",
+            "kampseis"
+        ],
+        "back": [
+            "monozugo",
+            "kwphlatikh orthios"
+        ],
+        "omous": [
+            "",
+            ""
+        ]
+    },
+    "history": {
+        
+    },
+    "programms": [
+        {
+            "dateFrom": "",
+            "dateTo": "",
+            "name":"",
+            "exercises": {
+                "chest": [
+                    {
+                        "name": "kampseis",
+                        "date": "20/03/2022",
+                        "sets": [
+                            {
+                                "weight": 10,
+                                "reps": 10
+                            },
+                            {
+                                "weight": 10,
+                                "reps": 10
+                            },
+                            {
+                                "weight": 10,
+                                "reps": 10
+                            },
+                            {
+                                "weight": 10,
+                                "reps": 10
+                            }
+                        ],
+                        "setsNumber": 4
+                    }
+                ],
+                "back": [],
+                "legs": [],
+                "omous": []
+            }
+        },
+        {}
+    ]
+}
