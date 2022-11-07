@@ -34,6 +34,7 @@ import Card from "@mui/material/Card";
 import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
 import CardActions from "@mui/material/CardActions";
+import { InputNumber } from "primereact/inputnumber";
 
 class ChipsList extends React.Component {
   constructor(props) {
@@ -93,7 +94,7 @@ class ChipsList extends React.Component {
         </Box>
         <Box sx={{ width: "100%", display: "flex" }}>
           <Stack
-            sx={{ m: 2 }}
+            sx={{ m: 1 }}
             direction="column"
             flexWrap="wrap"
             justifyContent="space-around"
@@ -109,36 +110,32 @@ class ChipsList extends React.Component {
                 }}
                 key={`${setNumber}` + index}
               >
-                <FormControl sx={{ m: "1px" }} variant="outlined" size="small">
-                  <OutlinedInput
-                    id="outlined-adornment-weight"
-                    label="Set {index}"
-                    type="number"
-                    onChange={(event) =>
-                      this.props.onChangeReps(
-                        event.target.value,
-                        this.props.chosenExercise,
-                        index
-                      )
-                    }
-                    value={setNumber.reps}
-                    endAdornment={
-                      <InputAdornment position="end">reps</InputAdornment>
-                    }
-                    aria-describedby="outlined-weight-helper-text"
-                    inputProps={{
-                      "aria-label": "weight",
-                      style: { textAlign: "center" },
-                    }}
-                  />
-                  <InputLabel> Set {index + 1}</InputLabel>
-                </FormControl>
+                <InputNumber
+                  key={`${setNumber}` + index}
+                  inputId="horizontal"
+                  value={setNumber.reps}
+                  onValueChange={(event) => (this.props.onChangeReps(
+                    event.value,
+                    this.props.chosenExercise,
+                    index
+                  ))}
+                  showButtons
+                  buttonLayout="horizontal"
+                  step={1}
+                  decrementButtonClassName="p-button-danger p-0 w-3"
+                  incrementButtonClassName="p-button-info p-0 w-3"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  inputClassName="w-full text-sm p-2 text-center"
+                  className="w-auto"
+                  suffix=" reps"
+                />
               </Box>
             ))}
           </Stack>
 
           <Stack
-            sx={{ m: 2 }}
+            sx={{ m: 1 }}
             direction="column"
             flexWrap="wrap"
             justifyContent="space-around"
@@ -148,36 +145,33 @@ class ChipsList extends React.Component {
               <Box
                 sx={{
                   display: "flex",
-                  flexDirection: "row",
+                  flexDirection: "column",
                   justifyContent: "center",
                   my: 1,
                 }}
                 key={`${setNumber}` + index}
               >
-                <FormControl sx={{ m: "1px" }} variant="outlined" size="small">
-                  <OutlinedInput
-                    id="outlined-adornment-weight"
-                    label="Set {index}"
-                    type="number"
-                    value={setNumber.weight}
-                    onChange={(event) =>
-                      this.props.onChangeWeight(
-                        event.target.value,
-                        this.props.chosenExercise,
-                        index
-                      )
-                    }
-                    endAdornment={
-                      <InputAdornment position="end">kg</InputAdornment>
-                    }
-                    aria-describedby="outlined-weight-helper-text"
-                    inputProps={{
-                      "aria-label": "weight",
-                      style: { textAlign: "center" },
-                    }}
-                  />
-                  <InputLabel> Weight</InputLabel>
-                </FormControl>
+                <InputNumber
+                  key={`${setNumber}` + index}
+                  inputId="horizontal"
+                  value={setNumber.weight}
+                  onValueChange={(event) => this.props.onChangeWeight(
+                    event.value,
+                    this.props.chosenExercise,
+                    index
+                  )}
+                  showButtons
+                  buttonLayout="horizontal"
+                  step={this.props.kgSlider}
+                  decrementButtonClassName="p-button-danger p-0 w-3"
+                  incrementButtonClassName="p-button-info p-0 w-3"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  inputClassName="w-full text-sm p-2 text-center"
+                  className="w-auto"
+                  suffix=" kg"
+                  
+                />
               </Box>
             ))}
           </Stack>

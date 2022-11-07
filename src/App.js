@@ -59,6 +59,7 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import SaveIcon from "@mui/icons-material/Save";
 import Autocomplete from "@mui/material/Autocomplete";
+import { Slider } from "primereact/slider";
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -81,6 +82,7 @@ class App extends React.Component {
         exercises: [],
       },
       currentProgramName: "",
+      kgSlider: 0.25,
       chosenTab: "",
     };
 
@@ -411,6 +413,20 @@ class App extends React.Component {
             </Button>
           </Box>
         )}
+        {this.state.chosenMuscleGroup.length > 0 && (
+          <Box>
+            <p className="mx-3">Kg value: {this.state.kgSlider}</p>
+            <Slider
+              className="w-auto mx-3 bg-info"
+              animate="true"
+              step={0.25}
+              min={0}
+              max={10}
+              value={this.state.kgSlider}
+              onChange={(e) => this.setState({ kgSlider: e.value })}
+            />
+          </Box>
+        )}
 
         {this.state.chosenMuscleGroup.length > 0 && (
           <TabContext value={this.state.chosenTab}>
@@ -433,6 +449,7 @@ class App extends React.Component {
                   <MuscleGroupItem
                     key={key}
                     chosenWeight={this.state.chosenWeight}
+                    kgSlider={this.state.kgSlider}
                     chosenExercise={Object.values(
                       this.state.currentProgram.exercises[muscleGroup]
                     )
