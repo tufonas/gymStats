@@ -1,71 +1,75 @@
 import * as React from "react";
 
 import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
-import { ref, set, get, onValue, query, push } from "firebase/database";
-import db from "../firebaseConfigs";
 import Menu from "@mui/material/Menu";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import LogoutIcon from "@mui/icons-material/Logout";
+import {getAuth} from "firebase/auth";
+import {useNavigate} from "react-router-dom";
 
-class Bar extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      open: false,
-    };
-    this.handleClick = this.handleClick.bind(this);
-    this.onCloseMenu = this.onCloseMenu.bind(this);
+
+export default function Bar({user, onClick}) {
+
+  let navigate = useNavigate();
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [open, setOpen] = React.useState(false);
+
+  function handleClick(event) {
+    setAnchorEl(event.currentTarget);
+    setOpen(true);
   }
 
-  handleClick(event) {
-    this.setState({ anchorEl: event.currentTarget });
-    this.setState({ open: true });
+  function onCloseMenu() {
+    setAnchorEl(null);
+    setOpen(false);
   }
 
-  onCloseMenu() {
-    this.setState({ anchorEl: null });
-    this.setState({ open: false });
+  function onMenuItemClick(actionName) {
+    setOpen(false);
+    onClick(actionName);
   }
 
-  onMenuItemClick(actionName) {
-    this.setState({open: false});
-    this.props.onClick(actionName);
+  function logout () {
+    getAuth().signOut().then(() => {
+      navigate('/login');
+    });
   }
 
 
-  render() {
+
+  function loggedUser() {
+    return getAuth().currentUser;
+  }
+
     return (
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={this.handleClick}
+
+          { user ? <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2 }}
+              onClick={handleClick}
           >
             <MenuIcon />
-          </IconButton>
+          </IconButton> : ""}
 
           <Menu
             id="demo-positioned-menu"
             aria-labelledby="demo-positioned-button"
-            anchorEl={this.state.anchorEl}
-            open={this.state.open}
-            onClose={this.onCloseMenu}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={onCloseMenu}
             anchorOrigin={{
               vertical: "bottom",
               horizontal: "left",
@@ -75,13 +79,13 @@ class Bar extends React.Component {
               horizontal: "left",
             }}
           >
-            <MenuItem onClick={() => this.onMenuItemClick("Program")}> 
+            <MenuItem onClick={() => onMenuItemClick("Program")}>
               <ListItemIcon>
                 <ListAltIcon fontSize="medium" />
               </ListItemIcon>
               <Typography variant="inherit">Add new program</Typography>
             </MenuItem>
-            <MenuItem onClick={() => this.onMenuItemClick("Exercise")}>
+            <MenuItem onClick={() => onMenuItemClick("Exercise")}>
               <ListItemIcon>
                 <FitnessCenterIcon fontSize="medium" />
               </ListItemIcon>
@@ -92,10 +96,16 @@ class Bar extends React.Component {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Gym stats
           </Typography>
+
+          { user ?
+              <IconButton aria-label="delete"
+                          onClick={() => logout()}
+                          sx={{color: "white"}}>
+                <LogoutIcon />
+              </IconButton> : ""
+          }
+
         </Toolbar>
       </AppBar>
     );
-  }
 }
-
-export default Bar;

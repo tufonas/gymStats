@@ -1,58 +1,21 @@
 import * as React from "react";
-import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Dialog from "@mui/material/Dialog";
-import RadioGroup from "@mui/material/RadioGroup";
-import Radio from "@mui/material/Radio";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Fab from "@mui/material/Fab";
-import AddIcon from "@mui/icons-material/Add";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MuscleGroups from "../enums/muscleGroupEnum";
-import IconButton from "@mui/material/IconButton";
-import Input from "@mui/material/Input";
 import FilledInput from "@mui/material/FilledInput";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputAdornment from "@mui/material/InputAdornment";
 import FormHelperText from "@mui/material/FormHelperText";
-import TextField from "@mui/material/TextField";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import db from "../firebaseConfigs";
-import {
-  ref,
-  set,
-  get,
-  onValue,
-  update,
-  push,
-  equalTo,
-  query,
-} from "firebase/database";
-import Backdrop from "@mui/material/Backdrop";
-import SpeedDial from "@mui/material/SpeedDial";
-import SpeedDialIcon from "@mui/material/SpeedDialIcon";
-import SpeedDialAction from "@mui/material/SpeedDialAction";
-import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
-import SaveIcon from "@mui/icons-material/Save";
-import PrintIcon from "@mui/icons-material/Print";
-import ShareIcon from "@mui/icons-material/Share";
-import ListAltIcon from "@mui/icons-material/ListAlt";
-import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
-import { map, from, mergeMap, of, switchMap, take, concatMap } from "rxjs";
+import {get, push, ref, set,} from "firebase/database";
+import {from, of, switchMap} from "rxjs";
 import ResponseResults from "../enums/responseResult";
-import Autocomplete from "@mui/material/Autocomplete";
-import CircularProgress from "@mui/material/CircularProgress";
 
 function ConfirmationDialogRaw(props) {
   const {
@@ -60,6 +23,7 @@ function ConfirmationDialogRaw(props) {
     exerciseName: exerciseNameProp,
     open,
     programs,
+    exercises,
     ...other
   } = props;
   const [exerciseName, setExerciseName] = React.useState(exerciseNameProp);
@@ -90,7 +54,6 @@ function ConfirmationDialogRaw(props) {
       setOptionsAutocomplete([]);
     }
   }, [openAutocomplete]);
-
   const onCancel = () => {
     setChosenProgram("");
     setClearAutocomplete(!clearAutocomplete);
@@ -105,7 +68,7 @@ function ConfirmationDialogRaw(props) {
   const onChangeMuscleGroup = (event) => {
     getExercises(chosenProgram, event.target.value).subscribe((res) => {
       setExercisesList(res);
-      validateExerciseName(null, res);
+      validateExerciseName();
     });
     setChosenMuscleGroup(event.target.value);
   };
@@ -114,24 +77,16 @@ function ConfirmationDialogRaw(props) {
     setExerciseName(event.target.value);
   };
 
-  const validateExerciseName = (event, exercises) => {
-    var name;
-    var isEqual;
-    if (event) {
-      name = event.target.value;
-    } else if (exerciseName) {
-      name = exerciseName;
-    } else {
-      name = ""
-    }
-    isEqual = Array.from(Object.values(exercises ? exercises : exercisesList)).map(x => x.name).includes(name);
-    setExerciseAlreadyExists(isEqual);
+  const validateExerciseName = () => {
+    let allExercises = Object.values(exercises).reduce((result, current) => Object.assign(result, current), {})
+    let exerciseAlreadyExists = Array.from(Object.values(allExercises)).map(x => x.exerciseName).includes(exerciseName);
+    setExerciseAlreadyExists(exerciseAlreadyExists);
   };
 
   const onSelectProgram = (event) => {
     getExercises(event.target.value, chosenMuscleGroup).subscribe((res) => {
       setExercisesList(res);
-      validateExerciseName(null, res);
+      validateExerciseName();
     });
     setChosenProgram(event.target.value);
   };
@@ -151,45 +106,6 @@ function ConfirmationDialogRaw(props) {
     >
       <DialogTitle>Add new exercise</DialogTitle>
       <DialogContent dividers>
-        <Autocomplete
-          id="asynchronous-demo"
-          sx={{ width: "100%", marginBottom: 2 }}
-          open={openAutocomplete}
-          onOpen={() => {
-            setOpenAutocomplete(true);
-          }}
-          onClose={() => {
-            setOpenAutocomplete(false);
-          }}
-          isOptionEqualToValue={(option, value) => option === value}
-          key={clearAutocomplete}
-          getOptionLabel={(option) => option}
-          options={Array.from(Object.keys(programs))}
-          loading={loadingAutocomplete}
-          renderInput={(params) => {
-            return (
-              <TextField
-                {...params}
-                label="Choose Programm"
-                value={chosenProgram}
-                onSelect={onSelectProgram}
-                onChange={onSelectProgram}
-                required
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <React.Fragment>
-                      {loadingAutocomplete ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </React.Fragment>
-                  ),
-                }}
-              />
-            );
-          }}
-        />
 
         <FormControl fullWidth required>
           <InputLabel id="demo-simple-select-label">Muscle Group</InputLabel>
@@ -219,12 +135,6 @@ function ConfirmationDialogRaw(props) {
         </FormControl>
 
         <Box
-          sx={{
-            display:
-              chosenMuscleGroup === "" || chosenProgram === ""
-                ? "none"
-                : "block",
-          }}
         >
           <FormControl
             fullWidth
@@ -250,22 +160,6 @@ function ConfirmationDialogRaw(props) {
           >
             {exerciseAlreadyExists ? "This exercise already exists!" : ""}
           </FormHelperText>
-          <FormControl
-            fullWidth
-            variant="filled"
-            sx={{ marginTop: 2 }}
-            required
-          >
-            <InputLabel htmlFor="filled-adornment-amount1">
-              Sets number
-            </InputLabel>
-            <FilledInput
-              type="number"
-              id="filled-adornment-amount1"
-              value={setsNumber}
-              onChange={(event) => setSetsNumber(Number(event.target.value))}
-            />
-          </FormControl>
         </Box>
       </DialogContent>
       <DialogActions>
@@ -278,9 +172,7 @@ function ConfirmationDialogRaw(props) {
           disabled={
             !(
               chosenMuscleGroup &&
-              exerciseName &&
-              chosenProgram &&
-              setsNumber
+              exerciseName
             ) || exerciseAlreadyExists
           }
         >
@@ -291,17 +183,13 @@ function ConfirmationDialogRaw(props) {
   );
 }
 
-ConfirmationDialogRaw.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  open: PropTypes.bool.isRequired,
-  exerciseName: PropTypes.string.isRequired,
-};
 
 export default function AddNewExerciseDialog(props) {
   const {
     openNewExerciceDialog: open,
     onCloseExerciseDialog,
     programs,
+    exercises,
   } = props;
   // const [exerciseName, setExerciseName] = React.useState(exerciseNameProp);
 
@@ -310,12 +198,12 @@ export default function AddNewExerciseDialog(props) {
 
   React.useEffect(() => {
     setOpenPopup(open);
-  }, [open]);
+  }, [open, openPopup]);
 
   const handleClose = (muscleGroup, exercise, program, setsNumber) => {
     setOpenPopup(false);
     if (exercise && muscleGroup) {
-      updateProgram(muscleGroup, exercise, program, setsNumber);
+      saveNewExercise(muscleGroup, exercise, program);
     } else {
       onCloseExerciseDialog(ResponseResults.CANCEL);
     }
@@ -326,10 +214,13 @@ export default function AddNewExerciseDialog(props) {
    * @param {*} muscleGroup
    * @param {*} exercise
    */
-  const saveNewExercise = (muscleGroup, exercise, program) => {
-    const muscleGroupsListRef = ref(db, "muscleGroups/" + muscleGroup);
+  const saveNewExercise = (muscleGroup, exerciseName, program) => {
+    const muscleGroupsListRef = ref(db, "all_exercises/" + muscleGroup);
     const newmuscleGroupsListRef = push(muscleGroupsListRef);
-    set(newmuscleGroupsListRef, exercise)
+    set(newmuscleGroupsListRef, {
+      exerciseName,
+      muscleGroup
+    })
       .catch((error) => {
         console.log(error);
         onCloseExerciseDialog(ResponseResults.ERROR, error);
@@ -374,10 +265,11 @@ export default function AddNewExerciseDialog(props) {
         <ConfirmationDialogRaw
           id="ringtone-menu"
           keepMounted
-          open={openPopup}
+          open={open}
           onClose={handleClose}
           exerciseName={exerciseName}
           programs={programs}
+          exercises={exercises}
         />
       </Box>
     </div>

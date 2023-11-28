@@ -2,52 +2,25 @@ import * as React from "react";
 import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Dialog from "@mui/material/Dialog";
-import RadioGroup from "@mui/material/RadioGroup";
-import Radio from "@mui/material/Radio";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Fab from "@mui/material/Fab";
-import AddIcon from "@mui/icons-material/Add";
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import MuscleGroups from "../enums/muscleGroupEnum";
-import IconButton from "@mui/material/IconButton";
-import Input from "@mui/material/Input";
 import FilledInput from "@mui/material/FilledInput";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputAdornment from "@mui/material/InputAdornment";
 import FormHelperText from "@mui/material/FormHelperText";
 import TextField from "@mui/material/TextField";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import db from "../firebaseConfigs";
-import { ref, set, get, onValue, query, push } from "firebase/database";
-import Backdrop from "@mui/material/Backdrop";
-import SpeedDial from "@mui/material/SpeedDial";
-import SpeedDialIcon from "@mui/material/SpeedDialIcon";
-import SpeedDialAction from "@mui/material/SpeedDialAction";
-import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
-import SaveIcon from "@mui/icons-material/Save";
-import PrintIcon from "@mui/icons-material/Print";
-import ShareIcon from "@mui/icons-material/Share";
-import ListAltIcon from "@mui/icons-material/ListAlt";
-import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
-import { map, from, mergeMap, of, switchMap, take, concatMap } from "rxjs";
+import {ref, set} from "firebase/database";
 import ResponseResults from "../enums/responseResult";
-import Autocomplete from "@mui/material/Autocomplete";
-import CircularProgress from "@mui/material/CircularProgress";
 import DatePicker from "@mui/lab/DatePicker";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import enLocale from "date-fns/locale/en-US";
+import {getAuth} from "firebase/auth";
+import endpoints from "../constants";
 
 function ConfirmationDialogRaw(props) {
   const {
@@ -58,6 +31,7 @@ function ConfirmationDialogRaw(props) {
     ...other
   } = props;
   const [programName, setProgramName] = React.useState(programNameProp);
+  const [numberOfDays, setNumberOfDays] = React.useState(3);
   const [openAutocomplete, setOpenAutocomplete] = React.useState(false);
   const [optionsAutocomplete, setOptionsAutocomplete] = React.useState([]);
   const [fromDate, setFromDate] = React.useState(null);
@@ -90,6 +64,10 @@ function ConfirmationDialogRaw(props) {
     setProgramName(event.target.value);
   };
 
+  const onChangeDaysNumber = (event) => {
+
+  }
+
 
   const validateProgramName = (event) => {
     var name = event.target.value;
@@ -120,6 +98,56 @@ function ConfirmationDialogRaw(props) {
           />
           <FormHelperText id="my-helper-text" error={isProgramNameAlreadyExists}>{isProgramNameAlreadyExists ? "This program already exists!" : ""}</FormHelperText>
         </FormControl>
+
+        <FormControl required fullWidth variant="filled" sx={{ marginTop: 1 }}>
+          <InputLabel required htmlFor="filled-adornment-amount">
+            Number of Days
+          </InputLabel>
+          <FilledInput
+              required
+              id="filled-adornment-amount"
+              value={numberOfDays}
+              onChange={onChangeDaysNumber}
+          />
+          {/*<FormHelperText id="my-helper-text" error={isProgramNameAlreadyExists}>{isProgramNameAlreadyExists ? "This program already exists!" : ""}</FormHelperText>*/}
+        </FormControl>
+
+        <FormControl sx={{ marginBottom: 2 }} fullWidth>
+          <InputLabel id="demo-simple-select-label">
+            1st Day
+          </InputLabel>
+          <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              label="Current program"
+              // value={this.state.currentProgram.name}
+              // onChange={(event) =>
+              //     this.onChangeCurrProgram(event.target.value)
+              // }
+          >
+            {/*{!this.state.currentProgram.name ? (*/}
+            {/*    <MenuItem disabled value="">*/}
+            {/*      <em>No options. Create a new program first!</em>*/}
+            {/*    </MenuItem>*/}
+            {/*) : (*/}
+            {/*    ""*/}
+            {/*)}*/}
+
+            {/*{Object.keys(this.state.programs).map((group) => (*/}
+            {/*    <MenuItem*/}
+            {/*        value={group}*/}
+            {/*        key={group}*/}
+            {/*        sx={{ display: "flex", justifyContent: "space-between" }}*/}
+            {/*    >*/}
+            {/*      {group}*/}
+            {/*    </MenuItem>*/}
+            {/*))}*/}
+          </Select>
+        </FormControl>
+
+
+
+
 
         <LocalizationProvider dateAdapter={AdapterDateFns} locale={enLocale}>
           <DatePicker
@@ -196,7 +224,7 @@ export default function AddNewProgramDialog(props) {
    * Save a new Program in the database
    */
   const saveNewPorgram = (program, from, to) => {
-    const programsListRef = ref(db, "programs/" + program);
+    const programsListRef = ref(db, "users/" + getAuth().currentUser.uid + endpoints.PROGRAMS + "/" + program);
     set(programsListRef, {
       dateFrom: from.toLocaleDateString(),
       dateTo: to.toLocaleDateString(),
