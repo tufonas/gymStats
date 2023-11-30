@@ -16,15 +16,24 @@ export default function Login() {
         provider.setCustomParameters({prompt: 'select_account', 'access_type': 'offline'});
         signInWithPopup(getAuth(), provider).then(result => {
 
-            get(ref(db, "users/")).then(users => {
-                console.log(result, users.val())
-                // console.log(Array.from(users.val()))
-                // console.log();
-                let userExistsInDb = Object.keys(users.val()).includes(result.user.uid);
-                if (!userExistsInDb) {
+            get(ref(db, "users/" + result.user.uid)).then( res => {
+                console.log(res.val())
+                if(!res.val()) {
                     set(ref(db, "users/" + result.user.uid), {programs: "", current_program: ""});
                 }
+            }).catch(error => {
+                console.log("error", error);
             })
+
+            // get(ref(db, "users/")).then(users => {
+            //     console.log(result, users.val())
+            //     // console.log(Array.from(users.val()))
+            //     // console.log();
+            //     let userExistsInDb = Object.keys(users.val()).includes(result.user.uid);
+            //     if (!userExistsInDb) {
+            //         set(ref(db, "users/" + result.user.uid), {programs: "", current_program: ""});
+            //     }
+            // })
 
             navigate('/home');
 

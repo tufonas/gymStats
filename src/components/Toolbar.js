@@ -15,7 +15,7 @@ import {getAuth} from "firebase/auth";
 import {useNavigate} from "react-router-dom";
 
 
-export default function Bar({user, onClick}) {
+export default function Bar({user, onClick, currentProgramName}) {
 
   let navigate = useNavigate();
 
@@ -93,8 +93,8 @@ export default function Bar({user, onClick}) {
             </MenuItem>
           </Menu>
 
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Gym stats
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={() => navigate('/home')}>
+            {currentProgramName}
           </Typography>
 
           { user ?

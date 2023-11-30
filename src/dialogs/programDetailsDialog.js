@@ -40,7 +40,7 @@ function ConfirmationDialogRaw({
             setToDate(currentProgram.dateTo);
         }
 
-        if(!currentProgram.name) {
+        if(!currentProgram?.name) {
             setFromDate(null);
             setToDate(null);
         }

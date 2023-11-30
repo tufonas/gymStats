@@ -23,8 +23,10 @@ function ConfirmationDialogRaw({isOpen, onClose, allExercises, chosenExercises})
 
 
     useEffect(() => {
-        let allExercises = Object.values(chosenExercises).reduce((result, current) => Object.assign(result, current), {})
-        setChosenExercisesList( Object.assign(chosenExercisesList,Object.keys(allExercises)));
+        if (chosenExercises) {
+            let allExercises = Object.values(chosenExercises).reduce((result, current) => Object.assign(result, current), {})
+            setChosenExercisesList(Object.assign(chosenExercisesList, Object.keys(allExercises)));
+        }
     },[chosenExercises]);
     const onSaveNewExercises = () => {
 
@@ -36,7 +38,7 @@ function ConfirmationDialogRaw({isOpen, onClose, allExercises, chosenExercises})
 
         let dataToBeSaved = chosenExercisesList.map(x => {
             let myObject = {};
-            console.log( allExercises[chosenMuscleGroup][x])
+            console.log( allExercises[chosenMuscleGroup], chosenExercisesList)
             allExercises[chosenMuscleGroup][x]['sets'] = setsArray;
             myObject[x] = allExercises[chosenMuscleGroup][x];
             return myObject;

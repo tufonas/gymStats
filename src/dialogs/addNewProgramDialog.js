@@ -21,6 +21,8 @@ import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import enLocale from "date-fns/locale/en-US";
 import {getAuth} from "firebase/auth";
 import endpoints from "../constants";
+import MuscleGroupEnum from "../enums/muscleGroupEnum";
+import MuscleGroups from "../enums/muscleGroupEnum";
 
 function ConfirmationDialogRaw(props) {
   const {
@@ -228,8 +230,13 @@ export default function AddNewProgramDialog(props) {
     set(programsListRef, {
       dateFrom: from.toLocaleDateString(),
       dateTo: to.toLocaleDateString(),
-      name: program
-    })
+      name: program,
+      exercises: {...Object.keys(MuscleGroups).reduce((acc, muscle) => {
+          acc[muscle] = "";
+          return acc;
+        }, {})}}
+    )
+
       .catch((error) => {
         onCloseProgramDialog(ResponseResults.ERROR, error);
       })

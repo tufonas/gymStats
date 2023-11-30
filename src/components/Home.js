@@ -28,17 +28,17 @@ import ProgramDetailsDialog from "../dialogs/programDetailsDialog";
 import Test from "../dialogs/programDetailsDialog";
 import AddIcon from "@mui/icons-material/Add";
 import endpoints from "../constants";
-import SideNavBar from "./SideNavBar";
 import {SvgIcon} from "@mui/material";
 import AddNewExerciseToProgramDialog from "../dialogs/AddNewExerciseToProgramDialog";
 import {useEffect} from "react";
+import {useLocation, useNavigate, useSearchParams} from "react-router-dom";
 
 
 // const Alert = React.forwardRef(function Alert(props, ref) {
 //     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 // });
 
-export default function Home({user, openNewProgram, openNewExercise, setOpenNewExercise, setOpenNewProgram}) {
+export default function Home({user, openNewProgram, openNewExercise, setOpenNewExercise, setOpenNewProgram, openProgramsDialog, onNavigateToHome}) {
 
     const [currentProgram, setCurrentProgram] = React.useState({
         name: "",
@@ -49,19 +49,19 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     const [openSuccessSnackBar, setOpenSuccessSnackBar] = React.useState(false);
     const [openErrorSnackBar, setOpenErrorSnackBar] = React.useState(false);
     const [programs, setPrograms] = React.useState([]);
-    const [muscleGroups, setMuscleGroups] = React.useState([]);
     const [chosenMuscleGroup, setChosenMuscleGroup] = React.useState([]);
     const [chosenTab, setChosenTab] = React.useState("");
     const [chosenWeight, setChosenWeight] = React.useState(0);
     const [kgSlider, setKgSlider] = React.useState(0.5);
     const [openProgramDetailsDialog, setOpenProgramDetailsDialog] = React.useState(false);
     const [openNewExerciseToProgramDialog, setOpenNewExerciseToProgramDialog] = React.useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
 
-
+    let location = useLocation();
+    let navigate = useNavigate();
 
     React.useEffect(() => {
         getPrograms();
-        getMuscleGroups();
         getAllExercises();
 
     },[]);
@@ -69,6 +69,27 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     useEffect(() => {
         getHistory();
     }, [currentProgram])
+
+    useEffect(() => {
+
+        if(localStorage.getItem('muscleGroups')) {
+            // console.log(localStorage.getItem('muscleGroups'))
+            // navigate('/home?muscleGroups=' + localStorage.getItem('muscleGroups'))
+        } else {
+            let muscleGroups = searchParams.get("muscleGroups")?.split(',');
+            console.log(muscleGroups)
+            if(muscleGroups) {
+                setChosenMuscleGroup(muscleGroups)
+                localStorage.setItem('muscleGroups', muscleGroups);
+                setChosenTab(muscleGroups[0])
+            }
+        }
+
+    },[searchParams])
+
+    useEffect(() => {
+        setOpenProgramDetailsDialog(openProgramsDialog)
+    }, [openProgramsDialog])
 
     function getCurrentProgram(programs) {
         get(ref(db, "users/" + user.uid + endpoints.CURRENT_PROGRAM))
@@ -78,7 +99,6 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                     createUpdateCurrentProgram(Object.keys(programs).pop());
                     response = Object.keys(programs).pop();
                 }
-                console.log(programs[response])
                 setCurrentProgram(programs[response]);
             })
             .catch((error) => {
@@ -90,16 +110,6 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     function createUpdateCurrentProgram(currentProgramName) {
         set(ref(db, "users/"  + user.uid + endpoints.CURRENT_PROGRAM), currentProgramName);
     }
-
-    function getMuscleGroups() {
-        return from(get(ref(db, "muscleGroups/")))
-            .pipe(switchMap((x) => (x.val() ? of(x.val()) : of({}))))
-            .subscribe((res) => {
-                setMuscleGroups(res);
-            });
-    }
-
-
 
     function getPrograms() {
         onValue(ref(db, "users/" + user.uid + endpoints.PROGRAMS), (res) => {
@@ -143,10 +153,10 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
             default:
                 break;
         }
+        onNavigateToHome()
     }
 
     function closeNewExerciseToProgramDialog(response, data) {
-        console.log(data, currentProgram)
         setOpenNewExerciseToProgramDialog(false);
         switch (response) {
             case ResponseResults.SUCCESS:
@@ -191,7 +201,9 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     }
 
     function onChangeMuscleGroup(event, test) {
+        console.log(event.target.value)
         setChosenMuscleGroup(event.target.value);
+        navigate('/home?muscleGroups=' + event.target.value)
         setChosenTab(event.target.value[0]);
     }
 
@@ -272,7 +284,7 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     }
 
     const getHistory = () => {
-        get(ref(db, "users/" + user.uid + "/programs/" + currentProgram.name + "/history")).then(res => {
+        get(ref(db, "users/" + user.uid + "/programs/" + currentProgram?.name + "/history")).then(res => {
             setHistory(res.val() ? Object.entries(res.val()) : []);
         })
     }
@@ -339,7 +351,11 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     return (
         <div>
             {/*<Bar onClick={(action) => onActionClicked(action)} user={user}/>*/}
-
+            <p sx={{
+                textAlign: "center"
+            }}>
+                In order to start, create a new program !
+            </p>
             {/*<SideNavBar></SideNavBar>*/}
             {currentProgram ? (
                 <Box sx={{margin: "15px", marginBottom: "0px"}}>
@@ -480,7 +496,7 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                 isOpen={openNewExerciseToProgramDialog}
                 onClose={closeNewExerciseToProgramDialog}
                 allExercises={allExercises}
-                chosenExercises={currentProgram.exercises}
+                chosenExercises={currentProgram?.exercises}
             >
 
             </AddNewExerciseToProgramDialog>
@@ -515,19 +531,19 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                 </Alert>
             </Snackbar>
 
-            <IconButton
-                onClick={() => setOpenProgramDetailsDialog(true)}
-                className="programButton"
-            >
-                <DescriptionIcon/>
-            </IconButton>
+            {/*<IconButton*/}
+            {/*    onClick={() => setOpenProgramDetailsDialog(true)}*/}
+            {/*    className="programButton"*/}
+            {/*>*/}
+            {/*    <DescriptionIcon/>*/}
+            {/*</IconButton>*/}
 
-            <IconButton
+            {currentProgram?.name ? <IconButton
                 onClick={() => setOpenNewExerciseToProgramDialog(true)}
                 className="addButton"
             >
                 <AddIcon/>
-            </IconButton>
+            </IconButton> : <div></div>}
 
 
         </div>

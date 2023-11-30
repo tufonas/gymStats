@@ -15,6 +15,8 @@ import {get, ref} from "firebase/database";
 import db from "./firebaseConfigs";
 import endpoints from "./constants";
 import {useState} from "react";
+import DescriptionIcon from "@mui/icons-material/Description";
+import Programs from "./components/Programs";
 
 function App() {
 
@@ -25,13 +27,14 @@ function App() {
     const [isLoading, setIsLoading] = React.useState(true);
     const [openNewProgram, setOpenNewProgram] = React.useState(false);
     const [openNewExercise, setOpenNewExercise] = React.useState(false);
+    const [openProgramsDialog, setOpenProgramsDialog] = React.useState(false);
     const [actionName, setActionName] = React.useState("");
     const [currentProgramName, setCurrentProgramName] = useState("");
 
 
     React.useEffect(() => {
         getAuth().onAuthStateChanged((user) => {
-            console.log(user)
+            console.log(user, location)
             if(user) {
                 getCurrentProgramName(user)
                 setAuthenticated(() => {
@@ -39,6 +42,7 @@ function App() {
                     return user;
                 });
             } else {
+                setAuthenticated(null);
                 setIsLoading(false);
             }
 
@@ -47,12 +51,9 @@ function App() {
     }, []);
 
     function getCurrentProgramName(user) {
-
-        console.log(user)
         get(ref(db, "users/" + user.uid + endpoints.CURRENT_PROGRAM))
             .then((res) => {
                 let response = res.val() ? res.val() : "";
-                console.log(response)
                 setCurrentProgramName(response);
             })
             .catch((error) => {
@@ -81,6 +82,7 @@ function App() {
                 onActionClicked(action);
             }}
                  user={authenticated}
+                 currentProgramName={currentProgramName}
             />
             <Routes>
                 <Route path="/" element={<Navigate to='/home' />}></Route>
@@ -90,10 +92,19 @@ function App() {
                                     openNewExercise={openNewExercise}
                                     setOpenNewExercise={setOpenNewExercise}
                                     setOpenNewProgram={setOpenNewProgram}
+                                    openProgramsDialog={openProgramsDialog}
+                                    onNavigateToHome={() => {
+                                        setValue(1);
+                                        setOpenProgramsDialog(false);
+                                    }}
                     ></ProtectedRoute>}>
                 </Route>
                 <Route path="/history" element={
                     <ProtectedRoute component={History} user={authenticated} currentProgramName={currentProgramName}
+                    ></ProtectedRoute>}>
+                </Route>
+                <Route path="/programs" element={
+                    <ProtectedRoute component={Programs} user={authenticated} currentProgramName={currentProgramName}
                     ></ProtectedRoute>}>
                 </Route>
                 <Route path="/login" element={<Login/>}></Route>
@@ -106,8 +117,17 @@ function App() {
                         setValue(newValue);
                     }}
                 >
-                    <BottomNavigationAction label="History" icon={<HistoryIcon/>} onClick={() => navigate("/history")}/>
-                    <BottomNavigationAction label="Workout" icon={<FitnessCenterIcon/>} onClick={() => navigate("/home")}/>
+                    <BottomNavigationAction label="History" icon={<HistoryIcon/>} onClick={() => {
+                        navigate("/history")
+                        setOpenProgramsDialog(false);
+                    }}/>
+                    <BottomNavigationAction label="Workout" icon={<FitnessCenterIcon/>} onClick={() => {
+                        navigate("/home");
+                        setOpenProgramsDialog(false);
+                    }}/>
+                    <BottomNavigationAction label="Programs" icon={<DescriptionIcon/>} onClick={() => {
+                        setOpenProgramsDialog(true);
+                    }}/>
                 </BottomNavigation>) : <></>}
             </Paper>
         </div>
