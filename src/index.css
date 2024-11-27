@@ -62,11 +62,31 @@ code {
 }
 
 .addButton {
-    z-index: 1;
-    position: fixed !important;
+    /* z-index: 1; */
+    /* position: fixed !important;
     bottom: 65px;
-    right: 15px;
+    right: 15px; */
     color: white !important;
     background-color: #1976d2 !important;
     box-shadow: 0 3px 5px -1px #0003, 0 6px 10px #00000024, 0 1px 18px #0000001f
+}
+
+.addButton2 {
+     z-index: 1; 
+    position: fixed !important;
+    bottom: 65px;
+    right: 15px; 
+    color: white !important;
+    background-color: #1976d2 !important;
+    box-shadow: 0 3px 5px -1px #0003, 0 6px 10px #00000024, 0 1px 18px #0000001f
+}
+
+.editIcon {
+    background-color: white !important;
+        border-radius: 4px !important;
+        box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12) !important;
+        padding: 8px !important ;
+        color: green;
+        margin-right: 10px;
+    
 }

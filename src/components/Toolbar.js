@@ -13,7 +13,8 @@ import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {getAuth} from "firebase/auth";
 import {useNavigate} from "react-router-dom";
-
+import DescriptionIcon from "@mui/icons-material/Description";
+import { Avatar, Divider, ListItemText } from "@mui/material";
 
 export default function Bar({user, onClick, currentProgramName}) {
 
@@ -62,7 +63,8 @@ export default function Bar({user, onClick, currentProgramName}) {
               onClick={handleClick}
           >
             <MenuIcon />
-          </IconButton> : ""}
+          </IconButton> 
+          : ""}
 
           <Menu
             id="demo-positioned-menu"
@@ -91,10 +93,24 @@ export default function Bar({user, onClick, currentProgramName}) {
               </ListItemIcon>
               <Typography variant="inherit">Add new exercise</Typography>
             </MenuItem>
+            <MenuItem onClick={() => {setOpen(false); navigate("/programs");}}>
+              <ListItemIcon>
+                <DescriptionIcon fontSize="medium" />
+              </ListItemIcon>
+              <Typography variant="inherit">Programs</Typography>
+            </MenuItem>
+            <Divider />
+          <MenuItem>
+          <ListItemIcon>
+            <Avatar src={user?.photoURL} sx={{ width: "35px", height: "35px", marginRight: "10px"}}></Avatar>
+          </ListItemIcon>
+          <ListItemText>{user?.displayName}</ListItemText>
+        </MenuItem>
           </Menu>
 
+
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={() => navigate('/home')}>
-            {currentProgramName}
+            Gym Stats
           </Typography>
 
           { user ?

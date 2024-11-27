@@ -10,8 +10,11 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import {InputNumber} from "primereact/inputnumber";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import Typography from "@mui/material/Typography";
+import {Grid} from "@mui/material";
+import { storage } from "../firebaseConfigs";
+import { ref, listAll, getDownloadURL  } from "firebase/storage";
 
 
 export default function MuscleGroupItem({
@@ -27,7 +30,7 @@ export default function MuscleGroupItem({
                                             onAddSet,
                                             onRemoveSet
                                         }) {
-    return (
+        return (
         <Card sx={{marginBottom: 2, padding: 1}}>
             <Box
                 sx={{
@@ -38,21 +41,6 @@ export default function MuscleGroupItem({
             >
 
                 <Typography  sx={{marginX: 2, marginY: 0}} variant="h6">{exerciseName}</Typography>
-                {/*<TextField*/}
-                {/*    sx={{marginX: 2, marginY: 1}}*/}
-                {/*    id="standard-basic"*/}
-                {/*    label="Exercise Name"*/}
-                {/*    variant="standard"*/}
-                {/*    value={exerciseName}*/}
-                {/*    onChange={(event) =>*/}
-                {/*        onChangeExerciseName(*/}
-                {/*            event.target.value,*/}
-                {/*            chosenExercise*/}
-                {/*        )*/}
-                {/*    }*/}
-                {/*/>*/}
-
-
                 <IconButton
                     aria-label="delete"
                     color="error"
@@ -71,7 +59,7 @@ export default function MuscleGroupItem({
                     justifyContent="space-around"
                     alignContent="center"
                 >
-                    {chosenExercise.sets.map((setNumber, index) => (
+                    {chosenExercise?.sets?.map((setNumber, index) => (
                         <Box
                             sx={{
                                 display: "flex",
@@ -94,7 +82,7 @@ export default function MuscleGroupItem({
                                 buttonLayout="horizontal"
                                 step={1}
                                 decrementButtonClassName="p-button-danger p-0 w-3"
-                                incrementButtonClassName="p-button-info p-0 w-3"
+                                incrementButtonClassName="p-button-info p-0 w-3 bg-green-100"
                                 incrementButtonIcon="pi pi-plus"
                                 decrementButtonIcon="pi pi-minus"
                                 inputClassName="w-full text-sm p-2 text-center"
@@ -112,7 +100,7 @@ export default function MuscleGroupItem({
                     justifyContent="space-around"
                     alignContent="center"
                 >
-                    {chosenExercise.sets.map((setNumber, index) => (
+                    {chosenExercise?.sets?.map((setNumber, index) => (
                         <Box
                             sx={{
                                 display: "flex",
@@ -150,15 +138,6 @@ export default function MuscleGroupItem({
             <CardActions sx={{display: "flex", justifyContent: "space-between"}}>
                 <Button
                     size="small"
-                    startIcon={<AddIcon/>}
-                    variant="outlined"
-                    sx={{width: "142px"}}
-                    onClick={() => onAddSet(chosenExercise)}
-                >
-                    Add Set
-                </Button>
-                <Button
-                    size="small"
                     startIcon={<RemoveIcon/>}
                     variant="outlined"
                     sx={{width: "142px"}}
@@ -166,6 +145,16 @@ export default function MuscleGroupItem({
                 >
                     Remove Set
                 </Button>
+                <Button
+                    size="small"
+                    startIcon={<AddIcon/>}
+                    variant="outlined"
+                    sx={{width: "142px"}}
+                    onClick={() => onAddSet(chosenExercise)}
+                >
+                    Add Set
+                </Button>
+
             </CardActions>
         </Card>
     )

@@ -18,6 +18,9 @@ import TextField from "@mui/material/TextField";
 import AddIcon from "@mui/icons-material/Add";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import { get, ref } from "firebase/database";
+import db from "../firebaseConfigs";
+import endpoints from "../constants";
 
 
 function ConfirmationDialogRaw({
@@ -34,6 +37,7 @@ function ConfirmationDialogRaw({
 
 
     React.useEffect(() => {
+
         if(currentProgram){
             setDialogCurrentProgram(currentProgram);
             setFromDate(currentProgram.dateFrom);
@@ -81,12 +85,12 @@ function ConfirmationDialogRaw({
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         label="Current program"
-                        value={dialogCurrentProgram.name}
+                        value={dialogCurrentProgram?.name}
                         onChange={(event) =>
                             onChangeCurrProgram(event.target.value)
                         }
                     >
-                        {!dialogCurrentProgram.name ? (
+                        {!dialogCurrentProgram?.name ? (
                             <MenuItem disabled value="">
                                 <em>No options. Create a new program first!</em>
                             </MenuItem>
@@ -173,6 +177,21 @@ export default function ProgramDetailsDialog({
                                                  currentProgram,
                                                  onAddNewProgram
                                              }) {
+
+    // function getCurrentProgram(programs) {
+    //     get(ref(db, "users/" + user.uid + endpoints.CURRENT_PROGRAM))
+    //         .then((res) => {
+    //             let response = res.val() ? res.val() : "";
+    //             if (Object.keys(programs)?.length === 1) {
+    //                 createUpdateCurrentProgram(Object.keys(programs).pop());
+    //                 response = Object.keys(programs).pop();
+    //             }
+    //             setCurrentProgram(programs[response]);
+    //         })
+    //         .catch((error) => {
+    //             // console.log(error);
+    //         });
+    // }                                      
 
     return (<div>
             <Box sx={{width: "100%", maxWidth: 360, bgcolor: "background.paper"}}>

@@ -3,7 +3,7 @@ import Button from "@mui/material/Button";
 import {getAuth, signInWithPopup, GoogleAuthProvider} from "firebase/auth";
 import {useNavigate} from "react-router-dom";
 import {get, ref, set} from "firebase/database";
-import db from "../firebaseConfigs";
+import {db} from "../firebaseConfigs";
 
 export default function Login() {
 
@@ -35,7 +35,7 @@ export default function Login() {
             //     }
             // })
 
-            navigate('/home');
+            navigate('/programs');
 
         }).catch((error) => {
             // Handle Errors here.

@@ -4,7 +4,6 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import IconButton from "@mui/material/IconButton";
 import SaveIcon from "@mui/icons-material/Save";
 import {Slider} from "primereact/slider";
 import TabContext from "@mui/lab/TabContext";
@@ -18,33 +17,36 @@ import AddNewProgramDialog from "../dialogs/addNewProgramDialog";
 import Snackbar from "@mui/material/Snackbar";
 import * as React from "react";
 import {get, onValue, push, ref, remove, set} from "firebase/database";
-import db from "../firebaseConfigs";
+import {db} from "../firebaseConfigs";
 import {from, of, switchMap} from "rxjs";
 import ResponseResults from "../enums/responseResult";
-import {Alert} from "@mui/lab";
 import DescriptionIcon from '@mui/icons-material/Description';
 import MuiAlert from "@mui/material/Alert";
 import ProgramDetailsDialog from "../dialogs/programDetailsDialog";
 import Test from "../dialogs/programDetailsDialog";
 import AddIcon from "@mui/icons-material/Add";
 import endpoints from "../constants";
-import {SvgIcon} from "@mui/material";
+import {Grid, SvgIcon, Typography} from "@mui/material";
 import AddNewExerciseToProgramDialog from "../dialogs/AddNewExerciseToProgramDialog";
 import {useEffect} from "react";
 import {useLocation, useNavigate, useSearchParams} from "react-router-dom";
+import { Alert } from '@mui/material';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
+import ListSubheader from '@mui/material/ListSubheader';
+import IconButton from '@mui/material/IconButton';
+import InfoIcon from '@mui/icons-material/Info';
 
-
-// const Alert = React.forwardRef(function Alert(props, ref) {
-//     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-// });
-
+import _ from 'lodash';
+import TabContent from "./TabContent";
 export default function Home({user, openNewProgram, openNewExercise, setOpenNewExercise, setOpenNewProgram, openProgramsDialog, onNavigateToHome}) {
 
     const [currentProgram, setCurrentProgram] = React.useState({
         name: "",
         exercises: [],
     });
-    const [allExercises, setAllExercises] = React.useState([]);
+    const [allExercises, setAllExercises] = React.useState(null);
     const [history, setHistory] = React.useState([]);
     const [openSuccessSnackBar, setOpenSuccessSnackBar] = React.useState(false);
     const [openErrorSnackBar, setOpenErrorSnackBar] = React.useState(false);
@@ -56,14 +58,11 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     const [openProgramDetailsDialog, setOpenProgramDetailsDialog] = React.useState(false);
     const [openNewExerciseToProgramDialog, setOpenNewExerciseToProgramDialog] = React.useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
+    const [selectedExercise, setSelectedExercise] = React.useState()
 
-    let location = useLocation();
-    let navigate = useNavigate();
-
-    React.useEffect(() => {
+    useEffect(() => {
         getPrograms();
         getAllExercises();
-
     },[]);
 
     useEffect(() => {
@@ -72,17 +71,18 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
 
     useEffect(() => {
 
-        if(localStorage.getItem('muscleGroups')) {
-            // console.log(localStorage.getItem('muscleGroups'))
-            // navigate('/home?muscleGroups=' + localStorage.getItem('muscleGroups'))
-        } else {
+
+        if(searchParams.get("muscleGroups")) {
             let muscleGroups = searchParams.get("muscleGroups")?.split(',');
-            console.log(muscleGroups)
             if(muscleGroups) {
                 setChosenMuscleGroup(muscleGroups)
-                localStorage.setItem('muscleGroups', muscleGroups);
+                // localStorage.setItem('muscleGroups', muscleGroups);
                 setChosenTab(muscleGroups[0])
             }
+        } else if (localStorage.getItem('muscleGroups')) {
+            let muscleGroups = localStorage.getItem('muscleGroups')?.split(',');
+            setChosenMuscleGroup(muscleGroups)
+            setChosenTab(muscleGroups[0])
         }
 
     },[searchParams])
@@ -99,7 +99,9 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                     createUpdateCurrentProgram(Object.keys(programs).pop());
                     response = Object.keys(programs).pop();
                 }
+                console.log(response, programs)
                 setCurrentProgram(programs[response]);
+                console.log(programs[response])
             })
             .catch((error) => {
                 // console.log(error);
@@ -121,6 +123,8 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     function getAllExercises() {
         onValue(ref(db, "all_exercises"), (res) => {
             setAllExercises(res.val() ? res.val() : []);
+            console.log(allExercises)
+            console.log(res.val())
         });
     }
 
@@ -157,15 +161,16 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     }
 
     function closeNewExerciseToProgramDialog(response, data) {
+
         setOpenNewExerciseToProgramDialog(false);
         switch (response) {
             case ResponseResults.SUCCESS:
-                let chosenMuscleGroup = Object.keys(data).pop();
-                let dataToBeSaved = Object.assign(currentProgram.exercises[chosenMuscleGroup], data[chosenMuscleGroup])
-
-                console.log(dataToBeSaved)
-                set(ref(db, "users/" + user.uid + "/programs/" +
-                    currentProgram.name + "/exercises/" + chosenMuscleGroup ), dataToBeSaved )
+                console.log(data)
+                let newExerciseMuscleGroup = Object.keys(data).pop();
+                // let dataToBeSaved = Object.assign(currentProgram.exercises[Object.keys(data).pop()], Object.values(data)[0])
+                // console.log(dataToBeSaved);
+                push(ref(db, "users/" + user.uid + "/programs/" +
+                    currentProgram.name + "/exercises/" + newExerciseMuscleGroup ), data[newExerciseMuscleGroup] )
                 setOpenSuccessSnackBar(true)
                 break;
             case ResponseResults.ERROR:
@@ -201,57 +206,28 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
     }
 
     function onChangeMuscleGroup(event, test) {
-        console.log(event.target.value)
         setChosenMuscleGroup(event.target.value);
-        navigate('/home?muscleGroups=' + event.target.value)
-        setChosenTab(event.target.value[0]);
+        searchParams.delete("muscleGroups");
+        searchParams.append("muscleGroups", event.target.value)
+        setSearchParams({muscleGroups: searchParams.get("muscleGroups")})
+        localStorage.setItem("muscleGroups", event.target.value);
+        if(event.target.value[0] === undefined) {
+            setChosenTab('');
+        } else {
+            setChosenTab(event.target.value[0]);
+        }
+
+
+        console.log("change", event.target.value[0], chosenTab);
     }
 
     const onTabChange = (event, newValue) => {
         setChosenTab(newValue);
     }
 
-    const onChangeWeight = (weight, exercise, index, muscleGroup) => {
-        let program = {...currentProgram};
-        Object.values(program.exercises[muscleGroup])
-            .filter((x) => x.exerciseName === exercise.exerciseName)
-            .pop().sets[index].weight = Number(weight);
-        setCurrentProgram(program);
-    }
 
-    const onAddSet = (exercise, muscleGroup) => {
 
-        console.log(exercise,muscleGroup, currentProgram)
 
-        var program = {...currentProgram};
-        // var program;
-        // program = Object.assign(program, currentProgram);
-        Object.values(program.exercises[muscleGroup])
-            .filter((x) => x.exerciseName === exercise.exerciseName)
-            .pop()
-            .sets.push({reps: 0, weight: 0});
-
-        console.log(program)
-        setCurrentProgram(program);
-    }
-
-    const onRemoveSet = (exercise, muscleGroup) => {
-        var program = {...currentProgram};
-        Object.values(program.exercises[muscleGroup])
-            .filter((x) => x.exerciseName === exercise.exerciseName)
-            .pop()
-            .sets.pop();
-
-        setCurrentProgram(program)
-    }
-
-    const onChangeReps = (reps, exercise, index, muscleGroup) => {
-        let program = {...currentProgram};
-        Object.values(program.exercises[muscleGroup])
-            .filter((x) => x.exerciseName === exercise.exerciseName)
-            .pop().sets[index].reps = Number(reps);
-        setCurrentProgram(program)
-    }
 
     const onSave = (data) => {
         let currProgram = data ? data : currentProgram;
@@ -263,21 +239,39 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                 setOpenErrorSnackBar(true)
             })
             .finally(() => {
-                setOpenSuccessSnackBar(true)
+                // setOpenSuccessSnackBar(true)
             });
 
 
+        // console.log(Object.entries(currentProgram.exercises));
+        currentProgram.exercises = Object.fromEntries(Object.entries(currentProgram.exercises).filter(x => x[0] === chosenTab ));
+        // currentProgram.exercises.filter( x => console.log(x));
         // console.log(history)
+        // console.log(data, currentProgram,chosenTab, history)
         let historyObj = history.filter(x => x[1].date === new Date().toLocaleDateString())
+        // console.log(historyObj)
         if(history && historyObj.length === 0) {
             push(ref(db, "users/" + user.uid + "/programs/" + currProgram.name + "/history"), {
                 date: new Date().toLocaleDateString(),
                 exercises: currentProgram.exercises
             })
         } else {
+
+            // const mergedArray = _.mergeWith([], [historyObj[0][1].exercises[chosenTab], currentProgram.exercises[chosenTab]], (arrValue, srcValue) => {
+            //     if (_.isArray(arrValue)) {
+            //         return arrValue.concat(srcValue);
+            //     }
+            // });
+            //
+            // console.log(mergedArray);
+            // let obj = currentProgram.exercises[chosenTab]
+            // // _.merge(obj, [historyObj[0][1].exercises[chosenTab]])
+            const mergedObject = _.merge({}, historyObj[0][1].exercises, currentProgram.exercises[chosenTab]);
+            // console.log(currentProgram.exercises[chosenTab], historyObj[0][1].exercises)
+            // console.log(mergedObject)
             set(ref(db, "users/" + user.uid + "/programs/" + currProgram.name + "/history/" + historyObj[0][0]), {
                 date: new Date().toLocaleDateString(),
-                exercises: currentProgram.exercises
+                exercises: _.merge({}, historyObj[0][1].exercises, currentProgram.exercises[chosenTab])
             })
         }
 
@@ -300,47 +294,9 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
         set(ref(db, "current_program"), "");
     }
 
-    const onDeleteExercise = (exercise, muscleGroup) => {
-        var exerciseIdToBeDeleted = Object.entries(
-            currentProgram.exercises[muscleGroup]
-        )
-            .filter((x) => x[1].exerciseName === exercise.exerciseName)
-            .pop()[0];
-        remove(
-            ref(
-                db,
-                "users/" + user.uid +
-                "/programs/" +
-                currentProgram.name +
-                "/exercises/" +
-                muscleGroup +
-                "/" +
-                exerciseIdToBeDeleted
-            )
-        );
 
-        if (Object.keys(currentProgram.exercises[muscleGroup]).length === 1) {
-            currentProgram.exercises[muscleGroup] = [];
-        }
 
-        var index = chosenMuscleGroup.findIndex(
-            (x) => x === muscleGroup
-        );
-        if (currentProgram.exercises[muscleGroup].length === 0) {
-            chosenMuscleGroup.splice(index, 1);
-            setChosenTab(chosenMuscleGroup[0]);
-        }
-        if (chosenMuscleGroup.length === 0)
-            setChosenMuscleGroup([])
-    }
 
-    const onChangeExerciseName = (exerciseName, exercise, muscleGroup) => {
-        let program = currentProgram;
-        Object.values(program.exercises[muscleGroup])
-            .filter((x) => x.name === exercise.name)
-            .pop().name = exerciseName;
-        setCurrentProgram(program)
-    }
 
     const onAddNewProgram = () => {
         setOpenProgramDetailsDialog(false);
@@ -350,13 +306,6 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
 
     return (
         <div>
-            {/*<Bar onClick={(action) => onActionClicked(action)} user={user}/>*/}
-            <p sx={{
-                textAlign: "center"
-            }}>
-                In order to start, create a new program !
-            </p>
-            {/*<SideNavBar></SideNavBar>*/}
             {currentProgram ? (
                 <Box sx={{margin: "15px", marginBottom: "0px"}}>
 
@@ -397,7 +346,22 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                     </FormControl>
                 </Box>
             ) : (
-                ""
+                <div>
+                <Typography align="center" marginTop={"20px"} variant="body1" fontWeight="bold"> In order to start, create a new program !</Typography>
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "10px" }}>
+                    <IconButton className="addButton" color="primary" onClick={() => setOpenNewProgram(true)}>
+                        <AddIcon />
+                    </IconButton>
+                </div>
+
+                <AddNewProgramDialog
+                            programs={programs}
+                            openNewProgramDialog={openNewProgram}
+                            onCloseProgramDialog={(res, error) =>
+                                closeNewProgramDialog(res, error)
+                            }
+                        />
+                </div>
             )}
             {chosenMuscleGroup.length > 0 && (
                 <IconButton
@@ -422,44 +386,78 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                         </TabList>
                     </Box>
 
-
                     {currentProgram.exercises  && chosenMuscleGroup?.map((muscleGroup, key) => (
-                        <TabPanel value={muscleGroup} key={key}
-                        sx={{padding:2, marginBottom: "90px"}}
+                        <TabContent
+                            muscleGroup={muscleGroup}
+                            key={key}
+                            allExercises={allExercises}
+                            chosenMuscleGroup={chosenMuscleGroup}
+                            currentProgram={currentProgram}
+                            setCurrentProgram={(...params) => setCurrentProgram(...params)}
+                            onSave={(...params) => onSave(...params)}
                         >
-                            { currentProgram.exercises[muscleGroup] && Object.values(
-                                currentProgram.exercises[muscleGroup]
-                            ).map((exercise, key) => (
-                                <MuscleGroupItem
-                                    key={key}
-                                    chosenWeight={chosenWeight}
-                                    kgSlider={kgSlider}
-                                    chosenExercise={exercise}
-                                    exerciseName={exercise.exerciseName}
-                                    onSave={(event) =>
-                                        onSave(event, this.state.currentProgram)
-                                    }
-                                    onChangeReps={(...params) =>
-                                        onChangeReps(...params, muscleGroup)
-                                    }
-                                    onChangeWeight={(...params) =>
-                                        onChangeWeight(...params, muscleGroup)
-                                    }
-                                    onChangeExerciseName={(...params) =>
-                                        onChangeExerciseName(...params, muscleGroup)
-                                    }
-                                    onDeleteExercise={(...params) =>
-                                        onDeleteExercise(...params, muscleGroup)
-                                    }
-                                    onAddSet={(...params) =>
-                                        onAddSet(...params, muscleGroup)
-                                    }
-                                    onRemoveSet={(...params) =>
-                                        onRemoveSet(...params, muscleGroup)
-                                    }
-                                />
-                            ))}
-                        </TabPanel>
+
+                        </TabContent>
+
+                        // <TabPanel value={muscleGroup} key={key}
+                        // sx={{padding:2, marginBottom: "90px"}}
+                        // >
+                        //     <Grid container spacing={0} sx={{  marginBottom: "10px" }}>
+                        //     { currentProgram.exercises[muscleGroup] && Object.values(
+                        //         currentProgram.exercises[muscleGroup]
+                        //     ).map((exercise, key) => (
+                        //             <Grid item xs={3} >
+                        //
+                        //                 {allExercises ? (
+                        //                     <div className="flex flex-column" style={{ width: '70px', margin: '5px' }}>
+                        //                         <img src={allExercises[muscleGroup][exercise.exerciseId].photoUrl} width={'70px'} height={'70px'} className="border-1 border-round-sm p-2 shadow-6" onClick={() => setSelectedExercise(exercise)}></img>
+                        //                         {/*<label className="text-center">{allExercises[muscleGroup][exercise.exerciseId].exerciseName}</label>*/}
+                        //                     </div>
+                        //                 ) : (<p>asd</p>)}
+                        //
+                        //             </Grid>
+                        //     ))}
+                        //     </Grid>
+                        //     {
+                        //         selectedExercise ? (
+                        //             <MuscleGroupItem
+                        //             key={key}
+                        //             chosenWeight={chosenWeight}
+                        //             kgSlider={kgSlider}
+                        //             chosenExercise={selectedExercise}
+                        //             exerciseName={allExercises[muscleGroup][selectedExercise.exerciseId]?.exerciseName}
+                        //             onSave={(event) =>
+                        //                 onSave(event, this.state.currentProgram)
+                        //             }
+                        //             onChangeReps={(...params) =>
+                        //             {
+                        //                 onChangeReps(...params, muscleGroup)
+                        //                 onSave();
+                        //             }
+                        //             }
+                        //             onChangeWeight={(...params) =>
+                        //             {
+                        //                 onChangeWeight(...params, muscleGroup)
+                        //                 onSave();
+                        //             }
+                        //             }
+                        //             onChangeExerciseName={(...params) =>
+                        //             {onChangeExerciseName(...params, muscleGroup); onSave();  }
+                        //             }
+                        //             onDeleteExercise={(...params) =>
+                        //             { onDeleteExercise(...params, muscleGroup); }
+                        //             }
+                        //             onAddSet={(...params) =>
+                        //             {onAddSet(...params, muscleGroup); onSave();  }
+                        //             }
+                        //             onRemoveSet={(...params) =>
+                        //             { onRemoveSet(...params, muscleGroup); onSave();  }
+                        //             }
+                        //         />
+                        //         ) : (<p></p>)
+                        //     }
+                        //
+                        // </TabPanel>
                     ))}
                     {!currentProgram.exercises ? <p>No exercises added yet!</p> : <div></div>}
                 </TabContext>
@@ -496,7 +494,8 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
                 isOpen={openNewExerciseToProgramDialog}
                 onClose={closeNewExerciseToProgramDialog}
                 allExercises={allExercises}
-                chosenExercises={currentProgram?.exercises}
+                programExercises={currentProgram.exercises}
+                chosenTab={chosenTab}
             >
 
             </AddNewExerciseToProgramDialog>
@@ -540,7 +539,7 @@ export default function Home({user, openNewProgram, openNewExercise, setOpenNewE
 
             {currentProgram?.name ? <IconButton
                 onClick={() => setOpenNewExerciseToProgramDialog(true)}
-                className="addButton"
+                className="addButton2"
             >
                 <AddIcon/>
             </IconButton> : <div></div>}

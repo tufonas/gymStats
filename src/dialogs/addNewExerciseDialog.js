@@ -12,7 +12,7 @@ import Select from "@mui/material/Select";
 import MuscleGroups from "../enums/muscleGroupEnum";
 import FilledInput from "@mui/material/FilledInput";
 import FormHelperText from "@mui/material/FormHelperText";
-import db from "../firebaseConfigs";
+import {db} from "../firebaseConfigs";
 import {get, push, ref, set,} from "firebase/database";
 import {from, of, switchMap} from "rxjs";
 import ResponseResults from "../enums/responseResult";
@@ -219,7 +219,8 @@ export default function AddNewExerciseDialog(props) {
     const newmuscleGroupsListRef = push(muscleGroupsListRef);
     set(newmuscleGroupsListRef, {
       exerciseName,
-      muscleGroup
+      muscleGroup,
+      photoUrl: ""
     })
       .catch((error) => {
         console.log(error);

@@ -12,7 +12,7 @@ import Select from "@mui/material/Select";
 import FilledInput from "@mui/material/FilledInput";
 import FormHelperText from "@mui/material/FormHelperText";
 import TextField from "@mui/material/TextField";
-import db from "../firebaseConfigs";
+import {db} from "../firebaseConfigs";
 import {ref, set} from "firebase/database";
 import ResponseResults from "../enums/responseResult";
 import DatePicker from "@mui/lab/DatePicker";
@@ -101,52 +101,6 @@ function ConfirmationDialogRaw(props) {
           <FormHelperText id="my-helper-text" error={isProgramNameAlreadyExists}>{isProgramNameAlreadyExists ? "This program already exists!" : ""}</FormHelperText>
         </FormControl>
 
-        <FormControl required fullWidth variant="filled" sx={{ marginTop: 1 }}>
-          <InputLabel required htmlFor="filled-adornment-amount">
-            Number of Days
-          </InputLabel>
-          <FilledInput
-              required
-              id="filled-adornment-amount"
-              value={numberOfDays}
-              onChange={onChangeDaysNumber}
-          />
-          {/*<FormHelperText id="my-helper-text" error={isProgramNameAlreadyExists}>{isProgramNameAlreadyExists ? "This program already exists!" : ""}</FormHelperText>*/}
-        </FormControl>
-
-        <FormControl sx={{ marginBottom: 2 }} fullWidth>
-          <InputLabel id="demo-simple-select-label">
-            1st Day
-          </InputLabel>
-          <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              label="Current program"
-              // value={this.state.currentProgram.name}
-              // onChange={(event) =>
-              //     this.onChangeCurrProgram(event.target.value)
-              // }
-          >
-            {/*{!this.state.currentProgram.name ? (*/}
-            {/*    <MenuItem disabled value="">*/}
-            {/*      <em>No options. Create a new program first!</em>*/}
-            {/*    </MenuItem>*/}
-            {/*) : (*/}
-            {/*    ""*/}
-            {/*)}*/}
-
-            {/*{Object.keys(this.state.programs).map((group) => (*/}
-            {/*    <MenuItem*/}
-            {/*        value={group}*/}
-            {/*        key={group}*/}
-            {/*        sx={{ display: "flex", justifyContent: "space-between" }}*/}
-            {/*    >*/}
-            {/*      {group}*/}
-            {/*    </MenuItem>*/}
-            {/*))}*/}
-          </Select>
-        </FormControl>
-
 
 
 
@@ -212,6 +166,10 @@ export default function AddNewProgramDialog(props) {
   React.useEffect(() => {
     setOpenPopup(open);
   }, [open]);
+
+  React.useEffect(() => {
+  },[])
+
 
   const handleClose = (program, from, to) => {
     setOpenPopup(false);
